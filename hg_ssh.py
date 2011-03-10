@@ -7,7 +7,7 @@ from shlex import split
 
 import sys, os
 
-def _serve(repo_root, args):
+def _serve(repo_root, user_name, args):
     
     # get repo path
     repo_path = None
@@ -30,7 +30,7 @@ def _serve(repo_root, args):
     return dispatch(args)
 
 
-def _init(repo_root, args):
+def _init(repo_root, user_name, args):
     
     # get repo path
     repo_path = None
@@ -54,9 +54,9 @@ def _init(repo_root, args):
         with open(os.path.join(full_repo_path, '.hg', 'hgrc'), 'w') as fp:
             fp.write('''\
 [web]
-contact = undefined
+contact = %(user)s
 description = %(path)s
-''' % dict(path = repo_path))
+''' % dict(user = user_name, path = repo_path))
         print >> sys.stderr, 'Created: %r' % full_repo_path
         
     else:
@@ -71,10 +71,11 @@ ALLOWED_ACTIONS = {
 
 def hg_ssh():
     
-    if len(sys.argv) != 2:
-        raise RuntimeError('You should provide the repositories root.')
+    if len(sys.argv) != 3:
+        raise RuntimeError('You should provide the repositories root and the user name.')
     
     repo_root = sys.argv[1]
+    user_name = sys.argv[2]
     
     pieces = split(os.getenv('SSH_ORIGINAL_COMMAND', '?'))
     
@@ -94,9 +95,8 @@ def hg_ssh():
         raise RuntimeError('Invalid hg action: %r' % action)
     
     # run mercurial action
-    return ALLOWED_ACTIONS[action](repo_root, pieces[1:])
+    return ALLOWED_ACTIONS[action](repo_root, user_name, pieces[1:])
 
 
 if __name__ == '__main__':
     sys.exit(hg_ssh())
-
