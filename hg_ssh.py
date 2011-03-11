@@ -99,4 +99,9 @@ def hg_ssh():
 
 
 if __name__ == '__main__':
-    sys.exit(hg_ssh())
+    try:
+        rv = hg_ssh()
+    except Exception, err:
+        print >> sys.stderr, str(err)
+        rv = -1
+    sys.exit(rv)
